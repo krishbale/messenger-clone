@@ -60,15 +60,30 @@ export const AuthForm = () => {
             //Next Auth Sign in
 
         }
-        const socialAction= (action:string)=>{
-            setIsLoading(true);
-            //Next Auth Social Sign In
-
-        }
+       
 
 
 
     }
+    const socialAction= (action:string)=>{
+      setIsLoading(true);
+      signIn(action,{
+        redirect:false
+
+      }).then((callback)=>{
+
+        if(callback?.error){
+          toast.error('Invalid Credentials');
+        }
+        if(callback?.ok &&!callback?.error){
+          toast.success('Logged In')
+
+        }
+      })
+      .finally(()=> setIsLoading(false));
+      //Next Auth Social Sign In
+
+  }
   return (
     <div className="
     mt-8
@@ -139,11 +154,13 @@ export const AuthForm = () => {
             </div>
           </div>
                         <div className="mt-6 flex gap-2">
-            <AuthSocialButton 
+            <AuthSocialButton
+               onClick={() => socialAction('github')} 
               icon={BsGithub} 
              
             />
             <AuthSocialButton 
+               onClick={() => socialAction('google')} 
               icon={BsGoogle} 
              
             />
