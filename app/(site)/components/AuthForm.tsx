@@ -4,11 +4,15 @@ import { BsGithub, BsGoogle  } from 'react-icons/bs';
 import { useCallback, useState } from "react";
 import {FieldValues,SubmitHandler, useForm } from "react-hook-form";
 import Input from "@/app/components/Input";
+import { signIn} from 'next-auth/react';
 import Button from "@/app/components/Button";
 import AuthSocialButton from "./AuthSocialButton";
+
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
 export const AuthForm = () => {
     const [variant , setVariant] = useState<Variant>('LOGIN');
-    const [isloading,setIsLoading] = useState(true);
+    const [isloading,setIsLoading] = useState(false);
     const toggleVariant = useCallback(()=>{
         if(variant ==='LOGIN'){
             setVariant('REGISTER');
@@ -31,10 +35,28 @@ export const AuthForm = () => {
     const onSubmit:SubmitHandler<FieldValues> = (data) =>{
         setIsLoading(true);
         if(variant ==='REGISTER'){
-            //Axios Register
+          axios.post('/api/register',data)
+          .catch(() => toast('Something went wrong'))
+          .finally(()=>setIsLoading(false))
 
         }
         if(variant === 'LOGIN'){
+
+          signIn('credentials',{
+            ...data,
+            redirect:false
+
+          }).then((callback) => {
+            if(callback?.error){
+              toast.error('Invalid credentials')
+            }
+            if(callback?.ok && !callback?.error){
+              toast.success('Logged in!')
+
+            }
+
+          }).finally(()=>setIsLoading(false))
+          
             //Next Auth Sign in
 
         }
@@ -80,7 +102,7 @@ export const AuthForm = () => {
                  id='email' 
              label="Email Address"
               errors={errors} 
-              type={register}
+              type='email'
              
               register={register}
                />
@@ -88,7 +110,7 @@ export const AuthForm = () => {
                  id='password' 
              label="Password"
               errors={errors} 
-              type={register}
+              type='password'
               register={register}
                />
                <Button
